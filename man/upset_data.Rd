@@ -18,10 +18,14 @@ upset_data(
   sort_sets = "descending",
   sort_intersections = "descending",
   sort_intersections_by = "cardinality",
+  sort_ratio_numerator = "exclusive_intersection",
+  sort_ratio_denominator = "inclusive_union",
   group_by = "degree",
-  min_max_early = TRUE,
-  union_count_column = "union_size",
-  intersection_count_column = "intersection_size"
+  mode = "exclusive_intersection",
+  size_columns_suffix = "_size",
+  encode_sets = FALSE,
+  max_combinations_datapoints_n = 10^10,
+  intersections = "observed"
 )
 }
 \arguments{
@@ -49,15 +53,23 @@ upset_data(
 
 \item{sort_intersections}{whether to sort the columns in the intersection matrix (descending sort by default); one of: \code{'ascending'}, \code{'descending'}, \code{FALSE}}
 
-\item{sort_intersections_by}{the mode of sorting, the size of the intersection (cardinality) by default; one of: \code{'cardinality'}, \code{'degree'}, \code{'ratio'}}
+\item{sort_intersections_by}{the mode of sorting, the size of the intersection (cardinality) by default; one of: \code{'cardinality'}, \code{'degree'}, \code{'ratio'}, or any combination of these (e.g. \code{c('degree', 'cardinality')})}
+
+\item{sort_ratio_numerator}{the mode for numerator when sorting by ratio}
+
+\item{sort_ratio_denominator}{the mode for denominator when sorting by ratio}
 
 \item{group_by}{the mode of grouping intersections; one of: \code{'degree'}, \code{'sets'}}
 
-\item{min_max_early}{whether the min and max limits should be applied early (for faster plotting), or late (for accurate depiction of ratios)}
+\item{mode}{region selection mode for sorting and trimming by size. See \code{get_size_mode()} for accepted values.}
 
-\item{union_count_column}{name of the column to store the union size (adjust if conflicts with your data)}
+\item{size_columns_suffix}{suffix for the columns to store the sizes (adjust if conflicts with your data)}
 
-\item{intersection_count_column}{name of the column to store the intersection size (adjust if conflicts with your data)}
+\item{encode_sets}{whether set names (column in input data) should be encoded as numbers (set to TRUE to overcome R limitations of max 10 kB for variable names for datasets with huge numbers of sets); default TRUE for upset() and FALSE for upset_data().}
+
+\item{max_combinations_datapoints_n}{a fail-safe limit preventing accidental use of \code{intersections='all'} with a high number of sets and observations}
+
+\item{intersections}{whether only the intersections present in data (\code{observed}, default), or all intersections (\code{all}) should be computed; using all intersections for a high number of sets is not computationally feasible - use \code{min_degree} and \code{max_degree} to narrow down the selection; this is only useful for modes different from the default exclusive intersection.}
 }
 \description{
 Prepare data for UpSet plots

@@ -7,7 +7,7 @@
 upset(
   data,
   intersect,
-  base_annotations = list(`Intersection size` = intersection_size(counts = TRUE)),
+  base_annotations = "auto",
   name = "group",
   annotations = list(),
   themes = upset_themes,
@@ -16,9 +16,12 @@ upset(
   height_ratio = 0.5,
   width_ratio = 0.3,
   wrap = FALSE,
-  set_sizes = upset_set_size(width = 0.6),
+  set_sizes = upset_set_size(),
+  mode = "distinct",
   queries = list(),
-  dot_size = 3,
+  guides = NULL,
+  encode_sets = TRUE,
+  matrix = intersection_matrix(),
   ...
 )
 }
@@ -49,11 +52,17 @@ upset(
 
 \item{wrap}{whether the plot should be wrapped into a group (makes adding a tile/combining with other plots easier)}
 
-\item{set_sizes}{a list of layers defining the overall set sizes, e.g. from \code{upset_set_size()} (\code{FALSE} to hide)}
+\item{set_sizes}{the overall set sizes plot, e.g. from \code{upset_set_size()} (\code{FALSE} to hide)}
+
+\item{mode}{region selection mode for computing the number of elements in intersection fragment. See \code{get_size_mode()} for accepted values.}
 
 \item{queries}{a list of queries generated with \code{upset_query()}}
 
-\item{dot_size}{size of the points on the intersection matrix}
+\item{guides}{action for legends aggregation and placement ('keep', 'collect', 'over' the set sizes)}
+
+\item{encode_sets}{whether set names (column in input data) should be encoded as numbers (set to TRUE to overcome R limitations of max 10 kB for variable names for datasets with huge numbers of sets); default TRUE for upset() and FALSE for upset_data().}
+
+\item{matrix}{the intersection matrix plot}
 
 \item{...}{
   Arguments passed on to \code{\link[=upset_data]{upset_data}}
@@ -68,11 +77,13 @@ upset(
     \item{\code{warn_when_converting}}{whether a warning should  be issued when input is not boolean}
     \item{\code{sort_sets}}{whether to sort the rows in the intersection matrix (descending sort by default); one of: \code{'ascending'}, \code{'descending'}, \code{FALSE}}
     \item{\code{sort_intersections}}{whether to sort the columns in the intersection matrix (descending sort by default); one of: \code{'ascending'}, \code{'descending'}, \code{FALSE}}
-    \item{\code{sort_intersections_by}}{the mode of sorting, the size of the intersection (cardinality) by default; one of: \code{'cardinality'}, \code{'degree'}, \code{'ratio'}}
+    \item{\code{sort_intersections_by}}{the mode of sorting, the size of the intersection (cardinality) by default; one of: \code{'cardinality'}, \code{'degree'}, \code{'ratio'}, or any combination of these (e.g. \code{c('degree', 'cardinality')})}
+    \item{\code{sort_ratio_numerator}}{the mode for numerator when sorting by ratio}
+    \item{\code{sort_ratio_denominator}}{the mode for denominator when sorting by ratio}
     \item{\code{group_by}}{the mode of grouping intersections; one of: \code{'degree'}, \code{'sets'}}
-    \item{\code{min_max_early}}{whether the min and max limits should be applied early (for faster plotting), or late (for accurate depiction of ratios)}
-    \item{\code{union_count_column}}{name of the column to store the union size (adjust if conflicts with your data)}
-    \item{\code{intersection_count_column}}{name of the column to store the intersection size (adjust if conflicts with your data)}
+    \item{\code{size_columns_suffix}}{suffix for the columns to store the sizes (adjust if conflicts with your data)}
+    \item{\code{intersections}}{whether only the intersections present in data (\code{observed}, default), or all intersections (\code{all}) should be computed; using all intersections for a high number of sets is not computationally feasible - use \code{min_degree} and \code{max_degree} to narrow down the selection; this is only useful for modes different from the default exclusive intersection.}
+    \item{\code{max_combinations_datapoints_n}}{a fail-safe limit preventing accidental use of \code{intersections='all'} with a high number of sets and observations}
   }}
 }
 \description{

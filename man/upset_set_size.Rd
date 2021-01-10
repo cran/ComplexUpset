@@ -4,16 +4,21 @@
 \alias{upset_set_size}
 \title{Prepare layers for sets sizes plot}
 \usage{
-upset_set_size(geom = geom_bar, layers = list(), mapping = aes(), ...)
+upset_set_size(
+  mapping = aes(),
+  geom = geom_bar(width = 0.6),
+  position = "left",
+  filter_intersections = FALSE
+)
 }
 \arguments{
-\item{geom}{the geom to use}
-
-\item{layers}{a list of additional layers (scales, geoms) to be included on the plot}
-
 \item{mapping}{additional aesthetics}
 
-\item{...}{passed to the geom}
+\item{geom}{a geom to use}
+
+\item{position}{on which side of the plot should the set sizes be displayed ('left' or 'right')}
+
+\item{filter_intersections}{whether the intersections filters (e.g. \code{n_intersections} or \code{min_size}) should influence displayed set sizes}
 }
 \description{
 Prepare layers for sets sizes plot

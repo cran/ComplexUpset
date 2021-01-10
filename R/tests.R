@@ -7,11 +7,37 @@ NULL
 #' @param test the default test function; it is expected to accept `formula` and `data` parameters, and a list with `p.value`, `statistic`, and `method`
 #' @param tests a named list with tests for specific variables, overwriting the default test
 #' @param ignore a list with names of variables to exclude from testing
+#' @param ignore_mode_columns whether the membership columns and size columns for all modes should be ignored
+#' @param mode region selection mode; note that modes other than `exclusive_intersection` repeat observations in different test group, introducing dependencies. See `get_size_mode()` for accepted values.
 #' @param ... passed to `upset_data()`
 #' @export
-compare_between_intersections = function(data, intersect, test=kruskal.test, tests=list(), ignore=list(), ...) {
-  data = upset_data(data, intersect, ...)
-  isect = data$intersected
+compare_between_intersections = function(
+    data, intersect, test=kruskal.test, tests=list(),
+    ignore=list(), ignore_mode_columns=TRUE,
+    mode='exclusive_intersection', ...
+) {
+  data = upset_data(data, intersect, mode=mode, ...)
+
+  isect = data$with_sizes
+  isect = isect[
+      (isect[, paste0('in_', mode)] == 1) & (isect$intersection %in% data$plot_intersections_subset),
+  ]
+
+  modes = c(
+      'exclusive_intersection',
+      'inclusive_intersection',
+      'exclusive_union',
+      'inclusive_union'
+  )
+
+  if (ignore_mode_columns) {
+      ignore = c(
+          ignore,
+          paste0('in_', modes),
+          paste0(modes, '_size'),
+          'exclusive_intersection'
+      )
+  }
 
   ignore = c('intersection', ignore)
 

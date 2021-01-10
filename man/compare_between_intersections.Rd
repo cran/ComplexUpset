@@ -10,6 +10,8 @@ compare_between_intersections(
   test = kruskal.test,
   tests = list(),
   ignore = list(),
+  ignore_mode_columns = TRUE,
+  mode = "exclusive_intersection",
   ...
 )
 }
@@ -23,6 +25,10 @@ compare_between_intersections(
 \item{tests}{a named list with tests for specific variables, overwriting the default test}
 
 \item{ignore}{a list with names of variables to exclude from testing}
+
+\item{ignore_mode_columns}{whether the membership columns and size columns for all modes should be ignored}
+
+\item{mode}{region selection mode; note that modes other than \code{exclusive_intersection} repeat observations in different test group, introducing dependencies. See \code{get_size_mode()} for accepted values.}
 
 \item{...}{passed to \code{upset_data()}}
 }

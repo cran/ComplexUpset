@@ -174,9 +174,160 @@ upset(
 ![ ](Examples_R_files/Examples_R_20_0.png)
 
 
+### 0.2 Region selection modes
+
+There are three modes defining the regions of interest on corresponding Venn diagram:
+
+- `exclusive_intersection` intersection region: intersection elements that belong to the sets defining the intersection but not to any other set (alias: *distinct*), **default**
+- `inclusive_intersection` intersection region: intersection elements that belong to the sets defining the intersection including overlaps with other sets (alias: *intersect*)
+- `exclusive_union` region: union elements that belong to the sets defining the union, *excluding* those overlapping with any other set
+- `inclusive_union` region: union elements that belong to the sets defining the union, *including* those overlapping with any other set (alias: *union*)
+
+Example: given three sets $A$, $B$ and $C$ with number of elements defined by the Venn diagram below
+
+
+```R
+abc_data = create_upset_abc_example()
+
+abc_venn = (
+    ggplot(arrange_venn(abc_data))
+    + coord_fixed()
+    + theme_void()
+    + scale_color_venn_mix(abc_data)
+)
+
+(
+    abc_venn
+    + geom_venn_region(data=abc_data, alpha=0.05)
+    + geom_point(aes(x=x, y=y, color=region), size=1)
+    + geom_venn_circle(abc_data)
+    + geom_venn_label_set(abc_data, aes(label=region))
+    + geom_venn_label_region(
+        abc_data, aes(label=size),
+        outwards_adjust=1.75,
+        position=position_nudge(y=0.2)
+    )
+    + scale_fill_venn_mix(abc_data, guide=FALSE)
+)
+```
+
+
+![ ](Examples_R_files/Examples_R_24_0.png)
+
+
+For the above sets $A$ and $B$ the region selection modes correspond to region of Venn diagram defined as follows:
+
+- exclusive intersection: $(A \cap B) \setminus C$
+- inclusive intersection: $A \cap B$
+- exclusive union: $(A \cup B) \setminus C$
+- inclusive union: $A \cup B$
+
+and have the total number of elements as in the table below:
+
+| members \ mode   | exclusive int. | inclusive int. | exclusive union | inclusive union |
+|------------------|----------|-----------|------------------|-----------------|
+| (A, B)           | 10       | 11        | 110              | 123             |
+| (A, C) == (B, C) | 6        | 7         | 256              | 273             |
+| (A) == (B)       | 50       | 67        | 50               | 67              |
+| (C)              | 200      | 213       | 200              | 213             |
+| (A, B, C)        | 1        | 1         | 323              | 323             |
+| ()               | 2        | 2         | 2                | 2               |
+
+
+```R
+set_size(6, 6.5)
+simple_venn = (
+    abc_venn
+    + geom_venn_region(data=abc_data, alpha=0.3)
+    + geom_point(aes(x=x, y=y), size=0.75, alpha=0.3)
+    + geom_venn_circle(abc_data)
+    + geom_venn_label_set(abc_data, aes(label=region), outwards_adjust=2.55)
+)
+highlight = function(regions) scale_fill_venn_mix(
+    abc_data, guide=FALSE, highlight=regions, inactive_color='NA'
+)
+
+(
+    (
+        simple_venn + highlight(c('A-B')) + labs(title='Exclusive intersection of A and B')
+        | simple_venn + highlight(c('A-B', 'A-B-C')) + labs(title='Inclusive intersection of A and B')
+    ) /
+    (
+        simple_venn + highlight(c('A-B', 'A', 'B')) + labs(title='Exclusive union of A and B')
+        | simple_venn + highlight(c('A-B', 'A-B-C', 'A', 'B', 'A-C', 'B-C')) + labs(title='Inclusive union of A and B')
+    )
+)
+```
+
+
+![ ](Examples_R_files/Examples_R_27_0.png)
+
+
+When customizing the `intersection_size()` it is important to adjust the mode accordingly, as it defaults to `exclusive_intersection` and cannot be automatically deduced when user customizations are being applied:
+
+
+```R
+set_size(8, 4.5)
+abc_upset = function(mode) upset(
+    abc_data, c('A', 'B', 'C'), mode=mode, set_sizes=FALSE,
+    encode_sets=FALSE,
+    queries=list(upset_query(intersect=c('A', 'B'), color='orange')),
+    base_annotations=list(
+        'Size'=(
+            intersection_size(
+                mode=mode,
+                mapping=aes(fill=exclusive_intersection),
+                size=0,
+                text=list(check_overlap=TRUE)
+            ) + scale_fill_venn_mix(
+                data=abc_data,
+                guide=FALSE,
+                colors=c('A'='red', 'B'='blue', 'C'='green3')
+            )
+        )
+    )
+)
+
+(
+    (abc_upset('exclusive_intersection') | abc_upset('inclusive_intersection'))
+    /
+    (abc_upset('exclusive_union') | abc_upset('inclusive_union'))
+)
+```
+
+
+![ ](Examples_R_files/Examples_R_29_0.png)
+
+
+### 0.3 Displaying all intersections
+
+To display all possible intersections (rather than only the observed ones) use `intersections='all'`.
+
+**Note 1**: it is usually desired to filter all the possible intersections down with `max_degree` and/or `min_degree` to avoid generating all combinations as those can easily use up all available RAM memory when dealing with multiple sets (e.g. all human genes) due to sheer number of possible combinations
+
+**Note 2**: using `intersections='all'` is only reasonable for mode different from the default *exclusive intersection*.
+
+
+```R
+set_size(8, 3)
+upset(
+    movies, genres,
+    width_ratio=0.1,
+    min_size=10,
+    mode='inclusive_union',
+    base_annotations=list('Size'=(intersection_size(counts=FALSE, mode='inclusive_union'))),
+    intersections='all',
+    max_degree=3
+)
+```
+
+
+![ ](Examples_R_files/Examples_R_32_0.png)
+
+
 ## 1. Adding components
 
-We can add multiple annotation components (also called panels):
+We can add multiple annotation components (also called panels) using one of the three methods demonstrated below:
 
 
 ```R
@@ -188,22 +339,22 @@ upset(
     movies,
     genres,
     annotations = list(
+        # 1st method - passing list:
         'Length'=list(
             aes=aes(x=intersection, y=length),
-            geom=geom_boxplot()
+            # provide a list if you wish to add several geoms
+            geom=geom_boxplot(na.rm=TRUE)
         ),
-        'Rating'=list(
-            aes=aes(x=intersection, y=rating),
-            geom=list(
-                # checkout ggbeeswarm::geom_quasirandom for better results!
-                geom_jitter(aes(color=log10(votes))),
-                geom_violin(alpha=0.5)
-            )
+        # 2nd method - using ggplot
+        'Rating'=(
+            # note that aes(x=intersection) is supplied by default and can be skipped
+            ggplot(mapping=aes(y=rating))
+            # checkout ggbeeswarm::geom_quasirandom for better results!
+            + geom_jitter(aes(color=log10(votes)), na.rm=TRUE)
+            + geom_violin(alpha=0.5, na.rm=TRUE)
         ),
-        'Budget'=list(
-            aes=aes(x=intersection, y=budget),
-            geom=geom_boxplot()
-        )
+        # 3rd method - using `upset_annotate` shorthand
+        'Budget'=upset_annotate('budget', geom_boxplot(na.rm=TRUE))
     ),
     min_size=10,
     width_ratio=0.1
@@ -211,29 +362,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_23_0.png)
-
-
-For simple annotations, such as the length above, you can use a shorthand notation of `upset_annotate`:
-
-
-```R
-set_size(8, 6)
-
-upset(
-    movies,
-    genres,
-    annotations = list(
-        'Length'=upset_annotate('length', geom_boxplot()),
-        'Budget'=upset_annotate('budget', geom_boxplot())
-    ),
-    min_size=10,
-    width_ratio=0.1
-)
-```
-
-
-![ ](Examples_R_files/Examples_R_25_0.png)
+![ ](Examples_R_files/Examples_R_35_0.png)
 
 
 You can also use barplots to demonstrate differences in proportions of categorical variables:
@@ -246,16 +375,15 @@ upset(
     movies,
     genres,
     annotations = list(
-        'MPAA Rating'=list(
-            aes=aes(x=intersection, fill=mpaa),
-            geom=list(
-                geom_bar(stat='count', position='fill'),
-                scale_y_continuous(labels=scales::percent_format()),
-                scale_fill_manual(values=c(
-                    'R'='#E41A1C', 'PG'='#377EB8',
-                    'PG-13'='#4DAF4A', 'NC-17'='#FF7F00'
-                ))
-            )
+        'MPAA Rating'=(
+            ggplot(mapping=aes(fill=mpaa))
+            + geom_bar(stat='count', position='fill')
+            + scale_y_continuous(labels=scales::percent_format())
+            + scale_fill_manual(values=c(
+                'R'='#E41A1C', 'PG'='#377EB8',
+                'PG-13'='#4DAF4A', 'NC-17'='#FF7F00'
+            ))
+            + ylab('MPAA Rating')
         )
     ),
     width_ratio=0.1
@@ -263,7 +391,45 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_27_0.png)
+![ ](Examples_R_files/Examples_R_37_0.png)
+
+
+### 1.1. Changing modes in annotations
+
+Use `upset_mode` to change the mode of the annotation:
+
+
+```R
+set_size(8, 8)
+set.seed(0)
+upset(
+    movies,
+    genres,
+    mode='inclusive_intersection',
+    annotations = list(
+        # if not specified, the mode will follow the mode set in `upset()` call (here: `inclusive_intersection`)
+        'Length (inclusive intersection)'=(
+            ggplot(mapping=aes(y=length))
+            + geom_jitter(alpha=0.2, na.rm=TRUE)
+        ),
+        'Length (exclusive intersection)'=(
+            ggplot(mapping=aes(y=length))
+            + geom_jitter(alpha=0.2, na.rm=TRUE)
+            + upset_mode('exclusive_intersection')
+        ),
+        'Length (inclusive union)'=(
+            ggplot(mapping=aes(y=length))
+            + geom_jitter(alpha=0.2, na.rm=TRUE)
+            + upset_mode('inclusive_union')
+        )
+    ),
+    min_size=10,
+    width_ratio=0.1
+)
+```
+
+
+![ ](Examples_R_files/Examples_R_40_0.png)
 
 
 ## 2. Running statistical tests
@@ -455,7 +621,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_42_0.png)
+![ ](Examples_R_files/Examples_R_55_0.png)
 
 
 The colors can be changed, and additional annotations added:
@@ -486,7 +652,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_44_0.png)
+![ ](Examples_R_files/Examples_R_57_0.png)
 
 
 Any parameter supported by `geom_text` can be passed in `text` list:
@@ -513,7 +679,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_46_0.png)
+![ ](Examples_R_files/Examples_R_59_0.png)
 
 
 ### 3.2 Fill the bars
@@ -528,7 +694,7 @@ upset(
     base_annotations=list(
         'Intersection size'=intersection_size(
             counts=FALSE,
-            aes=aes(fill=mpaa)
+            mapping=aes(fill=mpaa)
         )
     ),
     width_ratio=0.1
@@ -536,7 +702,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_48_0.png)
+![ ](Examples_R_files/Examples_R_61_0.png)
 
 
 
@@ -548,7 +714,7 @@ upset(
     base_annotations=list(
         'Intersection size'=intersection_size(
             counts=FALSE,
-            aes=aes(fill=mpaa)
+            mapping=aes(fill=mpaa)
         ) + scale_fill_manual(values=c(
             'R'='#E41A1C', 'PG'='#377EB8',
             'PG-13'='#4DAF4A', 'NC-17'='#FF7F00'
@@ -559,7 +725,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_49_0.png)
+![ ](Examples_R_files/Examples_R_62_0.png)
 
 
 
@@ -572,7 +738,7 @@ upset(
     base_annotations=list(
         'Intersection size'=intersection_size(
             counts=FALSE,
-            aes=aes(fill='bars_color')
+            mapping=aes(fill='bars_color')
         ) + scale_fill_manual(values=c('bars_color'='blue'), guide='none')
     ),
     width_ratio=0.1
@@ -580,7 +746,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_50_0.png)
+![ ](Examples_R_files/Examples_R_63_0.png)
 
 
 ### 3.3 Adjusting the height ratio
@@ -600,7 +766,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_53_0.png)
+![ ](Examples_R_files/Examples_R_66_0.png)
 
 
 ### 3.5 Hiding intersection size
@@ -620,16 +786,12 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_56_0.png)
+![ ](Examples_R_files/Examples_R_69_0.png)
 
 
 ### 3.6 Showing intersection size/union size ratio
 
 It can be useful to visualise which intersections are larger than expected by chance (assuming equal probability of belonging to multiple sets); this can be achieved using the intersection size/union size ratio.
-
-> Note: this ratio cannot be computed for the null intersection (observations which do not belong to either of the groups), as denominator would be 0.
-
-> Important note: with early min/max trimming the intersection ratio uses the trimmed denominator. In most cases you probably want to set `min_max_early=FALSE` when plotting ratios with any kind of filtering imposed.
 
 
 ```R
@@ -639,8 +801,7 @@ upset(
     base_annotations=list(
         'Intersection size'=intersection_size(),
         'Intersection ratio'=intersection_ratio()
-    ),
-    min_max_early=FALSE
+    )
 )
 ```
 
@@ -649,14 +810,14 @@ upset(
 
 
 
-![ ](Examples_R_files/Examples_R_59_1.png)
+![ ](Examples_R_files/Examples_R_72_1.png)
 
 
 The plot above tells us that the analysed documentary movies are almost always (in over 60% of cases) documentaries (and nothing more!), while comedies more often include elements of other genres (e.g. drama, romance) rather than being comedies alone (like stand-up shows).
 
 ### 3.7 Showing percentages
 
-`text_aes` can be used to manipulate the aesthetics of the labels. Using the `intersection_size` and `union_size` one can calculate percentage of items in the intersection (relative to the potential size of the intersection). A `upset_text_percentage(digits=0, sep='')` shorthand is provided for convenience; please note that it has to be used with `aes_` rather than `aes`:
+`text_mapping` can be used to manipulate the aesthetics of the labels. Using the `intersection_size` and `union_size` one can calculate percentage of items in the intersection (relative to the potential size of the intersection). A `upset_text_percentage(digits=0, sep='')` shorthand is provided for convenience:
 
 
 ```R
@@ -665,11 +826,12 @@ upset(
     movies, genres, name='genre', width_ratio=0.1, min_size=10,
     base_annotations=list(
         # with manual aes specification:
-        'Intersection size'=intersection_size(text_aes=aes(label=paste0(round(intersection_size/union_size * 100), '%'))),
+        'Intersection size'=intersection_size(text_mapping=aes(label=paste0(round(
+            !!get_size_mode('exclusive_intersection')/!!get_size_mode('inclusive_union') * 100
+        ), '%'))),
         # using shorthand:
-        'Intersection ratio'=intersection_ratio(text_aes=aes_(label=upset_text_percentage()))
-    ),
-    min_max_early=FALSE
+        'Intersection ratio'=intersection_ratio(text_mapping=aes(label=!!upset_text_percentage()))
+    )
 )
 ```
 
@@ -678,7 +840,7 @@ upset(
 
 
 
-![ ](Examples_R_files/Examples_R_63_1.png)
+![ ](Examples_R_files/Examples_R_76_1.png)
 
 
 Also see [10. Display percentages](#10-display-percentages).
@@ -703,10 +865,30 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_66_0.png)
+![ ](Examples_R_files/Examples_R_79_0.png)
 
 
 ## 4. Adjusting "set size"
+
+When using thresholding or selection criteria (such as `min_size` or `n_intersections`) the change in number of elements in each set size is not reflected in the set sizes plot by default. You can change this by providing `filter_intersections=TRUE` to `upset_set_size`.
+
+
+```R
+set_size(8, 2.5)
+upset(
+    movies, genres,
+    min_size=200,
+    set_sizes=upset_set_size()
+) | upset(
+    movies, genres,
+    min_size=200,
+    set_sizes=upset_set_size(filter_intersections=TRUE)
+)
+```
+
+
+![ ](Examples_R_files/Examples_R_82_0.png)
+
 
 ### 4.1 Rotate labels
 
@@ -720,14 +902,14 @@ upset(
     min_size=100,
     width_ratio=0.15,
     set_sizes=(
-        upset_set_size(width=0.6)
+        upset_set_size()
         + theme(axis.text.x=element_text(angle=90))
     )
 )
 ```
 
 
-![ ](Examples_R_files/Examples_R_70_0.png)
+![ ](Examples_R_files/Examples_R_85_0.png)
 
 
 To display the ticks:
@@ -738,19 +920,19 @@ set_size(4, 3)
 upset(
     movies, genres, width_ratio=0.3, min_size=100, wrap=TRUE,
     set_sizes=(
-        upset_set_size(width=0.6)
+        upset_set_size()
         + theme(axis.ticks.x=element_line())
     )
 )
 ```
 
 
-![ ](Examples_R_files/Examples_R_72_0.png)
+![ ](Examples_R_files/Examples_R_87_0.png)
 
 
 ### 4.2 Modify geoms and other layers
 
-Arguments of the `geom_bar` can be passed to `upset_set_size`; it can even use a different geom, or be replaced with a custom list of layers altogether:
+Arguments of the `geom_bar` can be adjusted in `upset_set_size`; it can use a different geom, or be replaced with a custom list of layers altogether:
 
 
 ```R
@@ -760,16 +942,17 @@ set_size(8, 3)
     upset(
         movies, genres, width_ratio=0.5, max_size=100, min_size=15, wrap=TRUE,
         set_sizes=upset_set_size(
-            width=0.4
+            geom=geom_bar(width=0.4)
         )
     )
     +
     upset(
         movies, genres, width_ratio=0.5, max_size=100, min_size=15, wrap=TRUE,
         set_sizes=upset_set_size(
-            geom=geom_point,
-            stat='count',
-            color='blue'
+            geom=geom_point(
+                stat='count',
+                color='blue'
+            )
         )
     )
     +
@@ -777,9 +960,8 @@ set_size(8, 3)
         movies, genres, width_ratio=0.5, max_size=100, min_size=15, wrap=TRUE,
         set_sizes=(
             upset_set_size(
-                geom=geom_point,
+                geom=geom_point(stat='count'),
                 mapping=aes(y=..count../max(..count..)),
-                stat='count'
             )
             + ylab('Size relative to the largest')
         )
@@ -788,12 +970,12 @@ set_size(8, 3)
 ```
 
 
-![ ](Examples_R_files/Examples_R_75_0.png)
+![ ](Examples_R_files/Examples_R_90_0.png)
 
 
 ### 4.3 Logarithmic scale
 
-In order to use a log scale we need pass additional scale to in `layers` argument. However, as the bars are on flipped coordinates, we need a reversed log transformation. Appropriate function, `reverse_log_trans()` is provided:
+In order to use a log scale we need to pass additional scale to in `layers` argument. However, as the bars are on flipped coordinates, we need a reversed log transformation. Appropriate function, `reverse_log_trans()` is provided:
 
 
 ```R
@@ -804,7 +986,7 @@ upset(
     width_ratio=0.1,
     min_size=10,
     set_sizes=(
-        upset_set_size(width=0.4)
+        upset_set_size()
         + theme(axis.text.x=element_text(angle=90))
         + scale_y_continuous(trans=reverse_log_trans())
     ),
@@ -813,7 +995,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_78_0.png)
+![ ](Examples_R_files/Examples_R_93_0.png)
 
 
 We can also modify the labels to display the logged values:
@@ -826,7 +1008,7 @@ upset(
     movies, genres,
     min_size=10,
     width_ratio=0.2,
-    set_sizes=upset_set_size(width=0.4)
+    set_sizes=upset_set_size()
         + scale_y_continuous(
             trans=reverse_log_trans(),
             labels=log10
@@ -836,10 +1018,38 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_80_0.png)
+![ ](Examples_R_files/Examples_R_95_0.png)
 
 
-Or display the actual count:
+### 4.4 Display counts
+
+To display the count add `geom_text()`:
+
+
+```R
+set_size(5, 3)
+
+upset(
+    movies, genres,
+    min_size=10,
+    width_ratio=0.3,
+    encode_sets=FALSE,  # for annotate() to select the set by name disable encoding
+    set_sizes=(
+        upset_set_size()
+        + geom_text(aes(label=..count..), hjust=1.1, stat='count')
+        # you can also add annotations on top of bars:
+        + annotate(geom='text', label='@', x='Drama', y=850, color='white', size=3)
+        + expand_limits(y=1100)
+        + theme(axis.text.x=element_text(angle=90))
+    )
+)
+```
+
+
+![ ](Examples_R_files/Examples_R_98_0.png)
+
+
+### 4.5 Change position and add fill
 
 
 ```R
@@ -851,26 +1061,23 @@ upset(
     width_ratio=0.3,
     set_sizes=(
         upset_set_size(
-            width=0.4,
-            geom=function(...) {
-                list(
-                    geom_bar(...),
-                    geom_text(..., aes(label=..count..), hjust=1.1)
-                )
-            },
-            stat='count'
+            geom=geom_bar(
+                aes(fill=mpaa, x=group),
+                width=0.8
+            ),
+            position='right'
         )
-        + expand_limits(y=1100)
-        + theme(axis.text.x=element_text(angle=90))
-    )
+    ),
+    # moves legends over the set sizes
+    guides='over'
 )
 ```
 
 
-![ ](Examples_R_files/Examples_R_82_0.png)
+![ ](Examples_R_files/Examples_R_100_0.png)
 
 
-### 4.4 Hide the set sizes altogether
+### 4.6 Hide the set sizes altogether
 
 
 ```R
@@ -884,7 +1091,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_84_0.png)
+![ ](Examples_R_files/Examples_R_102_0.png)
 
 
 ## 5. Adjusting other aesthetics
@@ -906,7 +1113,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_88_0.png)
+![ ](Examples_R_files/Examples_R_106_0.png)
 
 
 You can use multiple colors:
@@ -924,7 +1131,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_90_0.png)
+![ ](Examples_R_files/Examples_R_108_0.png)
 
 
 Or, set the color to white to effectively disable the stripes:
@@ -942,7 +1149,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_92_0.png)
+![ ](Examples_R_files/Examples_R_110_0.png)
 
 
 ### 5.2 Adding title
@@ -956,7 +1163,7 @@ upset(movies, genres, min_size=10) + ggtitle('Intersection matrix title')
 ```
 
 
-![ ](Examples_R_files/Examples_R_95_0.png)
+![ ](Examples_R_files/Examples_R_113_0.png)
 
 
 In order to add a title for the entire plot, you need to wrap the plot:
@@ -968,7 +1175,7 @@ upset(movies, genres, min_size=10, wrap=TRUE) + ggtitle('The overlap between gen
 ```
 
 
-![ ](Examples_R_files/Examples_R_97_0.png)
+![ ](Examples_R_files/Examples_R_115_0.png)
 
 
 ### 5.3 Making the plot transparent
@@ -988,10 +1195,67 @@ set_size(6, 4)
 ```
 
 
-![ ](Examples_R_files/Examples_R_100_0.png)
+![ ](Examples_R_files/Examples_R_118_0.png)
 
 
 Use `ggsave('upset.png', bg="transparent")` when exporting to PNG.
+
+### 5.4 Adjusting the intersection matrix
+
+Use `intersection_matrix()` to modify the matrix parameters:
+
+
+```R
+set_size(8, 4)
+upset(
+    movies, genres, name='genre', min_size=10,
+    encode_sets=FALSE,  # for annotate() to select the set by name disable encoding
+    matrix=(
+        intersection_matrix(
+            geom=geom_point(
+                shape='square',
+                size=3.5
+            ),
+            segment=geom_segment(
+                linetype='dotted'
+            ),
+            outline_color=list(
+                active='darkorange3',
+                inactive='grey70'
+            )
+        )
+        + scale_color_manual(
+            values=c('TRUE'='orange', 'FALSE'='grey'),
+            labels=c('TRUE'='yes', 'FALSE'='no'),
+            breaks=c('TRUE', 'FALSE'),
+            name='Is intersection member?'
+        )
+        + scale_y_discrete(
+            position='right'
+        )
+        + annotate(
+            geom='text',
+            label='Look here →',
+            x='Comedy-Drama',
+            y='Drama',
+            size=5,
+            hjust=1
+        )
+    ),
+    queries=list(
+        upset_query(
+            intersect=c('Drama', 'Comedy'),
+            color='red',
+            fill='red',
+            only_components=c('intersections_matrix', 'Intersection size')
+        )
+    )
+)
+```
+
+
+![ ](Examples_R_files/Examples_R_122_0.png)
+
 
 ## 6. Themes
 
@@ -1023,7 +1287,7 @@ upset(movies, genres, min_size=10, themes=list(default=theme()))
 ```
 
 
-![ ](Examples_R_files/Examples_R_107_0.png)
+![ ](Examples_R_files/Examples_R_128_0.png)
 
 
 You can also add themes for your custom panels/annotations:
@@ -1038,13 +1302,13 @@ upset(
     annotations = list(
         'Length'=list(
             aes=aes(x=intersection, y=length),
-            geom=geom_boxplot()
+            geom=geom_boxplot(na.rm=TRUE)
         ),
         'Rating'=list(
             aes=aes(x=intersection, y=rating),
             geom=list(
-                geom_jitter(aes(color=log10(votes))),
-                geom_violin(alpha=0.5)
+                geom_jitter(aes(color=log10(votes)), na.rm=TRUE),
+                geom_violin(alpha=0.5, na.rm=TRUE)
             )
         )
     ),
@@ -1058,7 +1322,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_109_0.png)
+![ ](Examples_R_files/Examples_R_130_0.png)
 
 
 ### 6.2 Adjusting the default themes
@@ -1076,7 +1340,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_112_0.png)
+![ ](Examples_R_files/Examples_R_133_0.png)
 
 
 To modify only a subset of default themes use `upset_modify_themes()`:
@@ -1100,16 +1364,16 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_114_0.png)
+![ ](Examples_R_files/Examples_R_135_0.png)
 
 
 ## 7. Highlighting (queries)
 
 Pass a list of lists generated with `upset_query()` utility to the optional `queries` argument to selectively modify aesthetics of specific intersections or sets.
 
-Use one of the arguments: `set` or `intersection` (not both) to specify what to highlight:
+Use one of the arguments: `set` or `intersect` (not both) to specify what to highlight:
 - `set` will highlight the bar of the set size,
-- `intersection` will highlight an intersection on all components (by default), or on components chosen with `only_components`
+- `intersect` will highlight an intersection on all components (by default), or on components chosen with `only_components`
 - all other parameters will be used to modify the geoms
 
 
@@ -1121,7 +1385,7 @@ upset(
     annotations = list(
         'Length'=list(
             aes=aes(x=intersection, y=length),
-            geom=geom_boxplot()
+            geom=geom_boxplot(na.rm=TRUE)
         )
     ),
     queries=list(
@@ -1145,7 +1409,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_117_0.png)
+![ ](Examples_R_files/Examples_R_138_0.png)
 
 
 ## 8. Sorting
@@ -1161,7 +1425,7 @@ upset(movies, genres, width_ratio=0.1, sort_intersections_by='degree')
 ```
 
 
-![ ](Examples_R_files/Examples_R_121_0.png)
+![ ](Examples_R_files/Examples_R_142_0.png)
 
 
 By ratio:
@@ -1173,14 +1437,18 @@ upset(
     movies, genres, name='genre', width_ratio=0.1, min_size=10,
     sort_intersections_by='ratio',
     base_annotations=list(
-        'Intersection size'=intersection_size(text_aes=aes_(label=upset_text_percentage())),
-        'Intersection ratio'=intersection_ratio(text_aes=aes_(label=upset_text_percentage()))
+        'Intersection size'=intersection_size(text_mapping=aes(label=!!upset_text_percentage())),
+        'Intersection ratio'=intersection_ratio(text_mapping=aes(label=!!upset_text_percentage()))
     )
 )
 ```
 
+    Warning message:
+    “Removed 62 rows containing missing values (position_stack).”
 
-![ ](Examples_R_files/Examples_R_123_0.png)
+
+
+![ ](Examples_R_files/Examples_R_144_1.png)
 
 
 The other way around:
@@ -1192,7 +1460,7 @@ upset(movies, genres, width_ratio=0.1, sort_intersections='ascending')
 ```
 
 
-![ ](Examples_R_files/Examples_R_125_0.png)
+![ ](Examples_R_files/Examples_R_146_0.png)
 
 
 Without any sorting:
@@ -1204,7 +1472,19 @@ upset(movies, genres, width_ratio=0.1, sort_intersections=FALSE)
 ```
 
 
-![ ](Examples_R_files/Examples_R_127_0.png)
+![ ](Examples_R_files/Examples_R_148_0.png)
+
+
+First by degree then by cardinality:
+
+
+```R
+set_size(8, 3)
+upset(movies, genres, width_ratio=0.1, sort_intersections_by=c('degree', 'cardinality'))
+```
+
+
+![ ](Examples_R_files/Examples_R_150_0.png)
 
 
 ### 8.2 Sorting sets
@@ -1218,7 +1498,7 @@ upset(movies, genres, width_ratio=0.1, sort_sets='ascending')
 ```
 
 
-![ ](Examples_R_files/Examples_R_130_0.png)
+![ ](Examples_R_files/Examples_R_153_0.png)
 
 
 Without sorting - preserving the order as in genres:
@@ -1245,7 +1525,7 @@ upset(movies, genres, width_ratio=0.1, sort_sets=FALSE)
 ```
 
 
-![ ](Examples_R_files/Examples_R_133_0.png)
+![ ](Examples_R_files/Examples_R_156_0.png)
 
 
 ## 9. Grouping
@@ -1280,7 +1560,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_137_0.png)
+![ ](Examples_R_files/Examples_R_160_0.png)
 
 
 ## 10. Display percentages
@@ -1308,7 +1588,7 @@ upset(
         'MPAA Rating'=list(
             aes=aes(x=intersection, fill=mpaa),
             geom=list(
-                geom_bar(stat='count', position='fill'),
+                geom_bar(stat='count', position='fill', na.rm=TRUE),
                 geom_text(
                     aes(
                         label=!!aes_percentage(relative_to='intersection'),
@@ -1326,8 +1606,12 @@ upset(
 )
 ```
 
+    Warning message:
+    “Removed 262 rows containing non-finite values (stat_count).”
 
-![ ](Examples_R_files/Examples_R_142_0.png)
+
+
+![ ](Examples_R_files/Examples_R_165_1.png)
 
 
 ### 10.2 Relative to the group
@@ -1342,7 +1626,7 @@ upset(
         'MPAA Rating'=list(
             aes=aes(x=intersection, fill=mpaa),
             geom=list(
-                geom_bar(stat='count', position='fill'),
+                geom_bar(stat='count', position='fill', na.rm=TRUE),
                 geom_text(
                     aes(
                         label=!!aes_percentage(relative_to='group'),
@@ -1362,8 +1646,12 @@ upset(
 
 ```
 
+    Warning message:
+    “Removed 262 rows containing non-finite values (stat_count).”
 
-![ ](Examples_R_files/Examples_R_144_0.png)
+
+
+![ ](Examples_R_files/Examples_R_167_1.png)
 
 
 ### 10.3 Relative to all observed values
@@ -1378,7 +1666,7 @@ upset(
         'MPAA Rating'=list(
             aes=aes(x=intersection, fill=mpaa),
             geom=list(
-                geom_bar(stat='count', position='fill'),
+                geom_bar(stat='count', position='fill', na.rm=TRUE),
                 geom_text(
                     aes(
                         label=!!aes_percentage(relative_to='all'),
@@ -1396,8 +1684,12 @@ upset(
 )
 ```
 
+    Warning message:
+    “Removed 262 rows containing non-finite values (stat_count).”
 
-![ ](Examples_R_files/Examples_R_146_0.png)
+
+
+![ ](Examples_R_files/Examples_R_169_1.png)
 
 
 ## 11. Advanced usage examples
@@ -1414,7 +1706,7 @@ upset(
         'MPAA Rating'=list(
             aes=aes(x=intersection, fill=mpaa),
             geom=list(
-                geom_bar(stat='count', position='fill'),
+                geom_bar(stat='count', position='fill', na.rm=TRUE),
                 geom_text(
                     aes(label=ifelse(mpaa == 'R', 'R', NA)),
                     stat='count',
@@ -1430,7 +1722,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_149_0.png)
+![ ](Examples_R_files/Examples_R_172_0.png)
 
 
 ### 11.2 Combine multiple plots together
@@ -1459,8 +1751,14 @@ u2 = upset(data_2, genres, min_size=5, base_annotations=annotations)
 (u1 | u2) + plot_layout(guides='collect')
 ```
 
+    Warning message:
+    “Removed 16 rows containing non-finite values (stat_count).”
+    Warning message:
+    “Removed 15 rows containing non-finite values (stat_count).”
 
-![ ](Examples_R_files/Examples_R_151_0.png)
+
+
+![ ](Examples_R_files/Examples_R_174_1.png)
 
 
 ### 11.3 Change height of the annotations
@@ -1482,6 +1780,135 @@ upset(
 ) + patchwork::plot_layout(heights=c(0.5, 1, 0.5))
 ```
 
+    Warning message:
+    “Removed 262 rows containing non-finite values (stat_count).”
 
-![ ](Examples_R_files/Examples_R_153_0.png)
+
+
+![ ](Examples_R_files/Examples_R_176_1.png)
+
+
+## 12. Venn diagrams
+
+Simple implementation of Venn diagrams is provided, taking the same input format as `upset()` but only supporting up to three sets.
+
+
+```R
+movies_subset = head(movies, 300)
+genres_subset = c('Comedy', 'Drama', 'Action')
+
+movies_subset$good_rating = movies_subset$rating > mean(movies_subset$rating)
+arranged = arrange_venn(movies_subset, sets=genres_subset)
+```
+
+### 12.1 Highlight specific elements
+
+
+```R
+set_size(8, 5.5)
+(
+    ggplot(arranged)
+    + theme_void()
+    + coord_fixed()
+    + geom_point(aes(x=x, y=y, color=region, shape=good_rating, fill=length), size=2.7)
+    + geom_venn_circle(movies_subset, sets=genres_subset, size=1)
+    + geom_venn_label_set(movies_subset, sets=genres_subset, aes(label=region), outwards_adjust=2.6)
+    + geom_venn_label_region(movies_subset, sets=genres_subset, aes(label=size), position=position_nudge(y=0.15))
+    + geom_curve(
+        data=arranged[which.min(arranged$length), ],
+        aes(xend=x+0.01, yend=y+0.01), x=1.5, y=2.5, curvature=.2,
+        arrow = arrow(length = unit(0.015, "npc"))
+    )
+    + annotate(
+        geom='text', x=1.9, y=2.6, size=6,
+        label=paste(substr(arranged[which.min(arranged$length), ]$title, 0, 9), 'is the shortest')
+    )
+    + scale_color_venn_mix(movies, sets=genres_subset, guide=FALSE)
+    + scale_shape_manual(
+        values=c(
+            'TRUE'='triangle filled',
+            'FALSE'='triangle down filled'
+        ),
+        labels=c(
+            'TRUE'='above average',
+            'FALSE'='below average'
+        ),
+        name='Rating'
+    )
+    + scale_fill_gradient(low='white', high='black', name='Length (minutes)')
+
+)
+```
+
+
+![ ](Examples_R_files/Examples_R_181_0.png)
+
+
+### 12.2 Highlight all regions
+
+
+```R
+set_size(8, 5.5)
+(
+    ggplot(arranged)
+    + theme_void()
+    + coord_fixed()
+    + geom_venn_region(movies_subset, sets=genres_subset, alpha=0.1)
+    + geom_point(aes(x=x, y=y, color=region), size=2.5)
+    + geom_venn_circle(movies_subset, sets=genres_subset, size=1.5)
+    + geom_venn_label_set(movies_subset, sets=genres_subset, aes(label=region), outwards_adjust=2.6)
+    + geom_venn_label_region(movies_subset, sets=genres_subset, aes(label=size), position=position_nudge(y=0.15))
+    + scale_color_venn_mix(movies, sets=genres_subset, guide=FALSE)
+    + scale_fill_venn_mix(movies, sets=genres_subset, guide=FALSE)
+)
+```
+
+
+![ ](Examples_R_files/Examples_R_183_0.png)
+
+
+### 12.3 Highlight specific regions
+
+
+```R
+set_size(8, 5.5)
+
+(
+    ggplot(arranged)
+    + theme_void()
+    + coord_fixed()
+    + geom_venn_region(movies_subset, sets=genres_subset, alpha=0.2)
+    + geom_point(aes(x=x, y=y, color=region), size=1.5)
+    + geom_venn_circle(movies_subset, sets=genres_subset, size=2)
+    + geom_venn_label_set(movies_subset, sets=genres_subset, aes(label=region), outwards_adjust=2.6)
+    + scale_color_venn_mix(movies, sets=genres_subset, guide=FALSE)
+    + scale_fill_venn_mix(movies, sets=genres_subset, guide=FALSE, highlight=c('Comedy-Action', 'Drama'), inactive_color='white')
+)
+```
+
+
+![ ](Examples_R_files/Examples_R_185_0.png)
+
+
+### 12.4 Two sets Venn
+
+The density of the points grid is determined in such a way that the all the points from the set with the largest space restrictions are fit into the available area. In case of the diagram below, its the observations that do not belong to any set that define the grid density:
+
+
+```R
+set_size(6, 4.5)
+genres_subset = c('Action', 'Drama')
+(
+    ggplot(arrange_venn(movies_subset, sets=genres_subset))
+    + theme_void()
+    + coord_fixed()
+    + geom_point(aes(x=x, y=y, color=region), size=2)
+    + geom_venn_circle(movies_subset, sets=genres_subset, size=2)
+    + geom_venn_label_set(movies_subset, sets=genres_subset, aes(label=region), outwards_adjust=2.6)
+    + scale_color_venn_mix(movies, sets=genres_subset, guide=FALSE)
+)
+```
+
+
+![ ](Examples_R_files/Examples_R_188_0.png)
 

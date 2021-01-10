@@ -1,7 +1,7 @@
 Package: ComplexUpset
 Type: Package
 Title: Create Complex UpSet Plots Using 'ggplot2' Components
-Version: 0.7.3
+Version: 1.0.3
 Authors@R: person(
   "Michał", "Krassowski", email = "krassowski.michal+r@gmail.com", role = c("aut", "cre"),
   comment = c(ORCID = "0000-0002-9638-7785"))
@@ -17,12 +17,12 @@ BugReports: https://github.com/krassowski/complex-upset/issues
 LazyData: true
 Suggests: testthat (>= 2.1.0), knitr, rmarkdown, covr, tibble,
         ggplot2movies, vdiffr, jsonlite
-Imports: ggplot2, patchwork, scales
+Imports: ggplot2, patchwork, scales, colorspace
 VignetteBuilder: knitr
 RoxygenNote: 7.1.1
 NeedsCompilation: no
-Packaged: 2020-12-05 12:48:37 UTC; krassowski
+Packaged: 2021-01-10 18:20:34 UTC; krassowski
 Author: Michał Krassowski [aut, cre] (<https://orcid.org/0000-0002-9638-7785>)
 Maintainer: Michał Krassowski <krassowski.michal+r@gmail.com>
 Repository: CRAN
-Date/Publication: 2020-12-08 09:30:02 UTC
+Date/Publication: 2021-01-10 19:20:08 UTC
