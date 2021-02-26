@@ -1487,6 +1487,31 @@ upset(movies, genres, width_ratio=0.1, sort_intersections_by=c('degree', 'cardin
 ![ ](Examples_R_files/Examples_R_150_0.png)
 
 
+User-specified order:
+
+
+```R
+set_size(6, 3)
+upset(
+    movies,
+    genres,
+    width_ratio=0.1,
+    sort_intersections=FALSE,
+    intersections=list(
+        'Comedy',
+        'Drama',
+        c('Comedy', 'Romance'),
+        c('Romance', 'Drama'),
+        'Outside of known sets',
+        'Action'
+    )
+)
+```
+
+
+![ ](Examples_R_files/Examples_R_152_0.png)
+
+
 ### 8.2 Sorting sets
 
 Ascending:
@@ -1498,7 +1523,7 @@ upset(movies, genres, width_ratio=0.1, sort_sets='ascending')
 ```
 
 
-![ ](Examples_R_files/Examples_R_153_0.png)
+![ ](Examples_R_files/Examples_R_155_0.png)
 
 
 Without sorting - preserving the order as in genres:
@@ -1525,7 +1550,7 @@ upset(movies, genres, width_ratio=0.1, sort_sets=FALSE)
 ```
 
 
-![ ](Examples_R_files/Examples_R_156_0.png)
+![ ](Examples_R_files/Examples_R_158_0.png)
 
 
 ## 9. Grouping
@@ -1560,7 +1585,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_160_0.png)
+![ ](Examples_R_files/Examples_R_162_0.png)
 
 
 ## 10. Display percentages
@@ -1611,7 +1636,7 @@ upset(
 
 
 
-![ ](Examples_R_files/Examples_R_165_1.png)
+![ ](Examples_R_files/Examples_R_167_1.png)
 
 
 ### 10.2 Relative to the group
@@ -1651,7 +1676,7 @@ upset(
 
 
 
-![ ](Examples_R_files/Examples_R_167_1.png)
+![ ](Examples_R_files/Examples_R_169_1.png)
 
 
 ### 10.3 Relative to all observed values
@@ -1689,7 +1714,7 @@ upset(
 
 
 
-![ ](Examples_R_files/Examples_R_169_1.png)
+![ ](Examples_R_files/Examples_R_171_1.png)
 
 
 ## 11. Advanced usage examples
@@ -1722,7 +1747,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_172_0.png)
+![ ](Examples_R_files/Examples_R_174_0.png)
 
 
 ### 11.2 Combine multiple plots together
@@ -1758,7 +1783,7 @@ u2 = upset(data_2, genres, min_size=5, base_annotations=annotations)
 
 
 
-![ ](Examples_R_files/Examples_R_174_1.png)
+![ ](Examples_R_files/Examples_R_176_1.png)
 
 
 ### 11.3 Change height of the annotations
@@ -1785,7 +1810,7 @@ upset(
 
 
 
-![ ](Examples_R_files/Examples_R_176_1.png)
+![ ](Examples_R_files/Examples_R_178_1.png)
 
 
 ## 12. Venn diagrams
@@ -1841,7 +1866,7 @@ set_size(8, 5.5)
 ```
 
 
-![ ](Examples_R_files/Examples_R_181_0.png)
+![ ](Examples_R_files/Examples_R_183_0.png)
 
 
 ### 12.2 Highlight all regions
@@ -1864,7 +1889,7 @@ set_size(8, 5.5)
 ```
 
 
-![ ](Examples_R_files/Examples_R_183_0.png)
+![ ](Examples_R_files/Examples_R_185_0.png)
 
 
 ### 12.3 Highlight specific regions
@@ -1887,7 +1912,7 @@ set_size(8, 5.5)
 ```
 
 
-![ ](Examples_R_files/Examples_R_185_0.png)
+![ ](Examples_R_files/Examples_R_187_0.png)
 
 
 ### 12.4 Two sets Venn
@@ -1910,5 +1935,5 @@ genres_subset = c('Action', 'Drama')
 ```
 
 
-![ ](Examples_R_files/Examples_R_188_0.png)
+![ ](Examples_R_files/Examples_R_190_0.png)
 
