@@ -19,7 +19,7 @@ head(movies, 3)
 ```
 
 
-<table>
+<table class="dataframe">
 <caption>A data.frame: 3 × 24</caption>
 <thead>
 	<tr><th></th><th scope=col>title</th><th scope=col>year</th><th scope=col>length</th><th scope=col>budget</th><th scope=col>rating</th><th scope=col>votes</th><th scope=col>r1</th><th scope=col>r2</th><th scope=col>r3</th><th scope=col>r4</th><th scope=col>⋯</th><th scope=col>r9</th><th scope=col>r10</th><th scope=col>mpaa</th><th scope=col>Action</th><th scope=col>Animation</th><th scope=col>Comedy</th><th scope=col>Drama</th><th scope=col>Documentary</th><th scope=col>Romance</th><th scope=col>Short</th></tr>
@@ -59,7 +59,7 @@ t(head(movies[genres], 3))
 ```
 
 
-<table>
+<table class="dataframe">
 <caption>A matrix: 7 × 3 of type lgl</caption>
 <thead>
 	<tr><th></th><th scope=col>1</th><th scope=col>2</th><th scope=col>3</th></tr>
@@ -117,7 +117,7 @@ upset(movies, genres, name='genre', width_ratio=0.1)
 ```
 
 
-![ ](Examples_R_files/Examples_R_12_0.png)
+![ ](Files_for_Examples_R/Examples_R_12_0.png)
 
 
 ### 0.1 Selecting intersections
@@ -139,7 +139,7 @@ set_size(8, 3)
 ```
 
 
-![ ](Examples_R_files/Examples_R_15_0.png)
+![ ](Files_for_Examples_R/Examples_R_15_0.png)
 
 
 When empty columns are detected a warning will be issued. The silence it, pass `warn_when_dropping_groups=FALSE`. Complimentary `max_size` can be used in tandem.
@@ -156,7 +156,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_18_0.png)
+![ ](Files_for_Examples_R/Examples_R_18_0.png)
 
 
 Or request a constant number of intersections with `n_intersections`:
@@ -171,15 +171,15 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_20_0.png)
+![ ](Files_for_Examples_R/Examples_R_20_0.png)
 
 
 ### 0.2 Region selection modes
 
-There are three modes defining the regions of interest on corresponding Venn diagram:
+There are four modes defining the regions of interest on corresponding Venn diagram:
 
-- `exclusive_intersection` intersection region: intersection elements that belong to the sets defining the intersection but not to any other set (alias: *distinct*), **default**
-- `inclusive_intersection` intersection region: intersection elements that belong to the sets defining the intersection including overlaps with other sets (alias: *intersect*)
+- `exclusive_intersection` region: intersection elements that belong to the sets defining the intersection but not to any other set (alias: *distinct*), **default**
+- `inclusive_intersection` region: intersection elements that belong to the sets defining the intersection including overlaps with other sets (alias: *intersect*)
 - `exclusive_union` region: union elements that belong to the sets defining the union, *excluding* those overlapping with any other set
 - `inclusive_union` region: union elements that belong to the sets defining the union, *including* those overlapping with any other set (alias: *union*)
 
@@ -212,7 +212,7 @@ abc_venn = (
 ```
 
 
-![ ](Examples_R_files/Examples_R_24_0.png)
+![ ](Files_for_Examples_R/Examples_R_24_0.png)
 
 
 For the above sets $A$ and $B$ the region selection modes correspond to region of Venn diagram defined as follows:
@@ -260,7 +260,7 @@ highlight = function(regions) scale_fill_venn_mix(
 ```
 
 
-![ ](Examples_R_files/Examples_R_27_0.png)
+![ ](Files_for_Examples_R/Examples_R_27_0.png)
 
 
 When customizing the `intersection_size()` it is important to adjust the mode accordingly, as it defaults to `exclusive_intersection` and cannot be automatically deduced when user customizations are being applied:
@@ -296,7 +296,7 @@ abc_upset = function(mode) upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_29_0.png)
+![ ](Files_for_Examples_R/Examples_R_29_0.png)
 
 
 ### 0.3 Displaying all intersections
@@ -322,7 +322,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_32_0.png)
+![ ](Files_for_Examples_R/Examples_R_32_0.png)
 
 
 ## 1. Adding components
@@ -362,7 +362,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_35_0.png)
+![ ](Files_for_Examples_R/Examples_R_35_0.png)
 
 
 You can also use barplots to demonstrate differences in proportions of categorical variables:
@@ -391,7 +391,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_37_0.png)
+![ ](Files_for_Examples_R/Examples_R_37_0.png)
 
 
 ### 1.1. Changing modes in annotations
@@ -429,7 +429,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_40_0.png)
+![ ](Files_for_Examples_R/Examples_R_40_0.png)
 
 
 ## 2. Running statistical tests
@@ -443,7 +443,7 @@ upset_test(movies, genres)
 
 
 
-<table>
+<table class="dataframe">
 <caption>A data.frame: 17 × 5</caption>
 <thead>
 	<tr><th></th><th scope=col>variable</th><th scope=col>p.value</th><th scope=col>statistic</th><th scope=col>test</th><th scope=col>fdr</th></tr>
@@ -523,7 +523,7 @@ head(upset_test(movies, genres, tests=custom_tests))
 
 
 
-<table>
+<table class="dataframe">
 <caption>A data.frame: 6 × 5</caption>
 <thead>
 	<tr><th></th><th scope=col>variable</th><th scope=col>p.value</th><th scope=col>statistic</th><th scope=col>test</th><th scope=col>fdr</th></tr>
@@ -553,7 +553,7 @@ tail(bartlett_results)
 
 
 
-<table>
+<table class="dataframe">
 <caption>A data.frame: 6 × 5</caption>
 <thead>
 	<tr><th></th><th scope=col>variable</th><th scope=col>p.value</th><th scope=col>statistic</th><th scope=col>test</th><th scope=col>fdr</th></tr>
@@ -621,7 +621,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_55_0.png)
+![ ](Files_for_Examples_R/Examples_R_55_0.png)
 
 
 The colors can be changed, and additional annotations added:
@@ -652,7 +652,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_57_0.png)
+![ ](Files_for_Examples_R/Examples_R_57_0.png)
 
 
 Any parameter supported by `geom_text` can be passed in `text` list:
@@ -679,7 +679,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_59_0.png)
+![ ](Files_for_Examples_R/Examples_R_59_0.png)
 
 
 ### 3.2 Fill the bars
@@ -702,7 +702,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_61_0.png)
+![ ](Files_for_Examples_R/Examples_R_61_0.png)
 
 
 
@@ -725,7 +725,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_62_0.png)
+![ ](Files_for_Examples_R/Examples_R_62_0.png)
 
 
 
@@ -746,7 +746,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_63_0.png)
+![ ](Files_for_Examples_R/Examples_R_63_0.png)
 
 
 ### 3.3 Adjusting the height ratio
@@ -766,7 +766,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_66_0.png)
+![ ](Files_for_Examples_R/Examples_R_66_0.png)
 
 
 ### 3.5 Hiding intersection size
@@ -786,7 +786,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_69_0.png)
+![ ](Files_for_Examples_R/Examples_R_69_0.png)
 
 
 ### 3.6 Showing intersection size/union size ratio
@@ -810,7 +810,7 @@ upset(
 
 
 
-![ ](Examples_R_files/Examples_R_72_1.png)
+![ ](Files_for_Examples_R/Examples_R_72_1.png)
 
 
 The plot above tells us that the analysed documentary movies are almost always (in over 60% of cases) documentaries (and nothing more!), while comedies more often include elements of other genres (e.g. drama, romance) rather than being comedies alone (like stand-up shows).
@@ -840,7 +840,7 @@ upset(
 
 
 
-![ ](Examples_R_files/Examples_R_76_1.png)
+![ ](Files_for_Examples_R/Examples_R_76_1.png)
 
 
 Also see [10. Display percentages](#10-display-percentages).
@@ -865,7 +865,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_79_0.png)
+![ ](Files_for_Examples_R/Examples_R_79_0.png)
 
 
 ## 4. Adjusting "set size"
@@ -887,7 +887,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_82_0.png)
+![ ](Files_for_Examples_R/Examples_R_82_0.png)
 
 
 ### 4.1 Rotate labels
@@ -909,7 +909,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_85_0.png)
+![ ](Files_for_Examples_R/Examples_R_85_0.png)
 
 
 To display the ticks:
@@ -927,7 +927,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_87_0.png)
+![ ](Files_for_Examples_R/Examples_R_87_0.png)
 
 
 ### 4.2 Modify geoms and other layers
@@ -970,7 +970,7 @@ set_size(8, 3)
 ```
 
 
-![ ](Examples_R_files/Examples_R_90_0.png)
+![ ](Files_for_Examples_R/Examples_R_90_0.png)
 
 
 ### 4.3 Logarithmic scale
@@ -995,7 +995,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_93_0.png)
+![ ](Files_for_Examples_R/Examples_R_93_0.png)
 
 
 We can also modify the labels to display the logged values:
@@ -1018,7 +1018,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_95_0.png)
+![ ](Files_for_Examples_R/Examples_R_95_0.png)
 
 
 ### 4.4 Display counts
@@ -1046,7 +1046,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_98_0.png)
+![ ](Files_for_Examples_R/Examples_R_98_0.png)
 
 
 ### 4.5 Change position and add fill
@@ -1074,7 +1074,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_100_0.png)
+![ ](Files_for_Examples_R/Examples_R_100_0.png)
 
 
 ### 4.6 Hide the set sizes altogether
@@ -1091,7 +1091,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_102_0.png)
+![ ](Files_for_Examples_R/Examples_R_102_0.png)
 
 
 ## 5. Adjusting other aesthetics
@@ -1113,7 +1113,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_106_0.png)
+![ ](Files_for_Examples_R/Examples_R_106_0.png)
 
 
 You can use multiple colors:
@@ -1131,7 +1131,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_108_0.png)
+![ ](Files_for_Examples_R/Examples_R_108_0.png)
 
 
 Or, set the color to white to effectively disable the stripes:
@@ -1149,7 +1149,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_110_0.png)
+![ ](Files_for_Examples_R/Examples_R_110_0.png)
 
 
 Advanced customization using `upset_stripes()`:
@@ -1170,7 +1170,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_112_0.png)
+![ ](Files_for_Examples_R/Examples_R_112_0.png)
 
 
 Mapping stripes attributes to data using `upset_stripes()`:
@@ -1201,7 +1201,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_114_0.png)
+![ ](Files_for_Examples_R/Examples_R_114_0.png)
 
 
 ### 5.2 Adding title
@@ -1215,7 +1215,7 @@ upset(movies, genres, min_size=10) + ggtitle('Intersection matrix title')
 ```
 
 
-![ ](Examples_R_files/Examples_R_117_0.png)
+![ ](Files_for_Examples_R/Examples_R_117_0.png)
 
 
 In order to add a title for the entire plot, you need to wrap the plot:
@@ -1227,7 +1227,7 @@ upset(movies, genres, min_size=10, wrap=TRUE) + ggtitle('The overlap between gen
 ```
 
 
-![ ](Examples_R_files/Examples_R_119_0.png)
+![ ](Files_for_Examples_R/Examples_R_119_0.png)
 
 
 ### 5.3 Making the plot transparent
@@ -1247,7 +1247,7 @@ set_size(6, 4)
 ```
 
 
-![ ](Examples_R_files/Examples_R_122_0.png)
+![ ](Files_for_Examples_R/Examples_R_122_0.png)
 
 
 Use `ggsave('upset.png', bg="transparent")` when exporting to PNG.
@@ -1306,7 +1306,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_126_0.png)
+![ ](Files_for_Examples_R/Examples_R_126_0.png)
 
 
 ## 6. Themes
@@ -1339,7 +1339,7 @@ upset(movies, genres, min_size=10, themes=list(default=theme()))
 ```
 
 
-![ ](Examples_R_files/Examples_R_132_0.png)
+![ ](Files_for_Examples_R/Examples_R_132_0.png)
 
 
 You can also add themes for your custom panels/annotations:
@@ -1374,7 +1374,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_134_0.png)
+![ ](Files_for_Examples_R/Examples_R_134_0.png)
 
 
 ### 6.2 Adjusting the default themes
@@ -1392,7 +1392,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_137_0.png)
+![ ](Files_for_Examples_R/Examples_R_137_0.png)
 
 
 To modify only a subset of default themes use `upset_modify_themes()`:
@@ -1416,7 +1416,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_139_0.png)
+![ ](Files_for_Examples_R/Examples_R_139_0.png)
 
 
 ## 7. Highlighting (queries)
@@ -1461,7 +1461,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_142_0.png)
+![ ](Files_for_Examples_R/Examples_R_142_0.png)
 
 
 ## 8. Sorting
@@ -1477,7 +1477,7 @@ upset(movies, genres, width_ratio=0.1, sort_intersections_by='degree')
 ```
 
 
-![ ](Examples_R_files/Examples_R_146_0.png)
+![ ](Files_for_Examples_R/Examples_R_146_0.png)
 
 
 By ratio:
@@ -1500,7 +1500,7 @@ upset(
 
 
 
-![ ](Examples_R_files/Examples_R_148_1.png)
+![ ](Files_for_Examples_R/Examples_R_148_1.png)
 
 
 The other way around:
@@ -1512,7 +1512,7 @@ upset(movies, genres, width_ratio=0.1, sort_intersections='ascending')
 ```
 
 
-![ ](Examples_R_files/Examples_R_150_0.png)
+![ ](Files_for_Examples_R/Examples_R_150_0.png)
 
 
 Without any sorting:
@@ -1524,7 +1524,7 @@ upset(movies, genres, width_ratio=0.1, sort_intersections=FALSE)
 ```
 
 
-![ ](Examples_R_files/Examples_R_152_0.png)
+![ ](Files_for_Examples_R/Examples_R_152_0.png)
 
 
 First by degree then by cardinality:
@@ -1536,7 +1536,7 @@ upset(movies, genres, width_ratio=0.1, sort_intersections_by=c('degree', 'cardin
 ```
 
 
-![ ](Examples_R_files/Examples_R_154_0.png)
+![ ](Files_for_Examples_R/Examples_R_154_0.png)
 
 
 User-specified order:
@@ -1561,7 +1561,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_156_0.png)
+![ ](Files_for_Examples_R/Examples_R_156_0.png)
 
 
 ### 8.2 Sorting sets
@@ -1575,7 +1575,7 @@ upset(movies, genres, width_ratio=0.1, sort_sets='ascending')
 ```
 
 
-![ ](Examples_R_files/Examples_R_159_0.png)
+![ ](Files_for_Examples_R/Examples_R_159_0.png)
 
 
 Without sorting - preserving the order as in genres:
@@ -1602,7 +1602,7 @@ upset(movies, genres, width_ratio=0.1, sort_sets=FALSE)
 ```
 
 
-![ ](Examples_R_files/Examples_R_162_0.png)
+![ ](Files_for_Examples_R/Examples_R_162_0.png)
 
 
 ## 9. Grouping
@@ -1637,7 +1637,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_166_0.png)
+![ ](Files_for_Examples_R/Examples_R_166_0.png)
 
 
 ## 10. Display percentages
@@ -1688,7 +1688,7 @@ upset(
 
 
 
-![ ](Examples_R_files/Examples_R_171_1.png)
+![ ](Files_for_Examples_R/Examples_R_171_1.png)
 
 
 ### 10.2 Relative to the group
@@ -1728,7 +1728,7 @@ upset(
 
 
 
-![ ](Examples_R_files/Examples_R_173_1.png)
+![ ](Files_for_Examples_R/Examples_R_173_1.png)
 
 
 ### 10.3 Relative to all observed values
@@ -1766,7 +1766,7 @@ upset(
 
 
 
-![ ](Examples_R_files/Examples_R_175_1.png)
+![ ](Files_for_Examples_R/Examples_R_175_1.png)
 
 
 ## 11. Advanced usage examples
@@ -1799,7 +1799,7 @@ upset(
 ```
 
 
-![ ](Examples_R_files/Examples_R_178_0.png)
+![ ](Files_for_Examples_R/Examples_R_178_0.png)
 
 
 ### 11.2 Combine multiple plots together
@@ -1835,7 +1835,7 @@ u2 = upset(data_2, genres, min_size=5, base_annotations=annotations)
 
 
 
-![ ](Examples_R_files/Examples_R_180_1.png)
+![ ](Files_for_Examples_R/Examples_R_180_1.png)
 
 
 ### 11.3 Change height of the annotations
@@ -1862,7 +1862,7 @@ upset(
 
 
 
-![ ](Examples_R_files/Examples_R_182_1.png)
+![ ](Files_for_Examples_R/Examples_R_182_1.png)
 
 
 ## 12. Venn diagrams
@@ -1918,7 +1918,7 @@ set_size(8, 5.5)
 ```
 
 
-![ ](Examples_R_files/Examples_R_187_0.png)
+![ ](Files_for_Examples_R/Examples_R_187_0.png)
 
 
 ### 12.2 Highlight all regions
@@ -1941,7 +1941,7 @@ set_size(8, 5.5)
 ```
 
 
-![ ](Examples_R_files/Examples_R_189_0.png)
+![ ](Files_for_Examples_R/Examples_R_189_0.png)
 
 
 ### 12.3 Highlight specific regions
@@ -1964,7 +1964,7 @@ set_size(8, 5.5)
 ```
 
 
-![ ](Examples_R_files/Examples_R_191_0.png)
+![ ](Files_for_Examples_R/Examples_R_191_0.png)
 
 
 ### 12.4 Two sets Venn
@@ -1987,5 +1987,5 @@ genres_subset = c('Action', 'Drama')
 ```
 
 
-![ ](Examples_R_files/Examples_R_194_0.png)
+![ ](Files_for_Examples_R/Examples_R_194_0.png)
 
