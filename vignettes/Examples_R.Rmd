@@ -207,7 +207,7 @@ abc_venn = (
         outwards_adjust=1.75,
         position=position_nudge(y=0.2)
     )
-    + scale_fill_venn_mix(abc_data, guide=FALSE)
+    + scale_fill_venn_mix(abc_data, guide='none')
 )
 ```
 
@@ -244,7 +244,7 @@ simple_venn = (
     + geom_venn_label_set(abc_data, aes(label=region), outwards_adjust=2.55)
 )
 highlight = function(regions) scale_fill_venn_mix(
-    abc_data, guide=FALSE, highlight=regions, inactive_color='NA'
+    abc_data, guide='none', highlight=regions, inactive_color='NA'
 )
 
 (
@@ -281,7 +281,7 @@ abc_upset = function(mode) upset(
                 text=list(check_overlap=TRUE)
             ) + scale_fill_venn_mix(
                 data=abc_data,
-                guide=FALSE,
+                guide='none',
                 colors=c('A'='red', 'B'='blue', 'C'='green3')
             )
         )
@@ -1650,7 +1650,7 @@ rating_scale = scale_fill_manual(values=c(
     'R'='#E41A1C', 'PG'='#377EB8',
     'PG-13'='#4DAF4A', 'NC-17'='#FF7F00'
 ))
-show_hide_scale = scale_color_manual(values=c('show'='black', 'hide'='transparent'), guide=FALSE)
+show_hide_scale = scale_color_manual(values=c('show'='black', 'hide'='transparent'), guide='none')
 ```
 
 ### 10.1 Within intersection
@@ -1900,7 +1900,7 @@ set_size(8, 5.5)
         geom='text', x=1.9, y=2.6, size=6,
         label=paste(substr(arranged[which.min(arranged$length), ]$title, 0, 9), 'is the shortest')
     )
-    + scale_color_venn_mix(movies, sets=genres_subset, guide=FALSE)
+    + scale_color_venn_mix(movies, sets=genres_subset, guide='none')
     + scale_shape_manual(
         values=c(
             'TRUE'='triangle filled',
@@ -1935,8 +1935,8 @@ set_size(8, 5.5)
     + geom_venn_circle(movies_subset, sets=genres_subset, size=1.5)
     + geom_venn_label_set(movies_subset, sets=genres_subset, aes(label=region), outwards_adjust=2.6)
     + geom_venn_label_region(movies_subset, sets=genres_subset, aes(label=size), position=position_nudge(y=0.15))
-    + scale_color_venn_mix(movies, sets=genres_subset, guide=FALSE)
-    + scale_fill_venn_mix(movies, sets=genres_subset, guide=FALSE)
+    + scale_color_venn_mix(movies, sets=genres_subset, guide='none')
+    + scale_fill_venn_mix(movies, sets=genres_subset, guide='none')
 )
 ```
 
@@ -1958,8 +1958,8 @@ set_size(8, 5.5)
     + geom_point(aes(x=x, y=y, color=region), size=1.5)
     + geom_venn_circle(movies_subset, sets=genres_subset, size=2)
     + geom_venn_label_set(movies_subset, sets=genres_subset, aes(label=region), outwards_adjust=2.6)
-    + scale_color_venn_mix(movies, sets=genres_subset, guide=FALSE)
-    + scale_fill_venn_mix(movies, sets=genres_subset, guide=FALSE, highlight=c('Comedy-Action', 'Drama'), inactive_color='white')
+    + scale_color_venn_mix(movies, sets=genres_subset, guide='none')
+    + scale_fill_venn_mix(movies, sets=genres_subset, guide='none', highlight=c('Comedy-Action', 'Drama'), inactive_color='white')
 )
 ```
 
@@ -1982,7 +1982,7 @@ genres_subset = c('Action', 'Drama')
     + geom_point(aes(x=x, y=y, color=region), size=2)
     + geom_venn_circle(movies_subset, sets=genres_subset, size=2)
     + geom_venn_label_set(movies_subset, sets=genres_subset, aes(label=region), outwards_adjust=2.6)
-    + scale_color_venn_mix(movies, sets=genres_subset, guide=FALSE)
+    + scale_color_venn_mix(movies, sets=genres_subset, guide='none')
 )
 ```
 
